@@ -198,6 +198,9 @@ app.put("/api/messages/:id/read", async (req, res) => {
   }
 });
 
+app.get("/", (req, res) => {
+  res.send("<h1>Backend API is running 🚀</h1>");
+});
 // Khởi chạy server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, "0.0.0.0", () => {
