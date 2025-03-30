@@ -36,9 +36,8 @@ const config = {
   secretKey: "K951B6PE1waDMi640xX08PD3vg6EkVlz",
   orderInfo: "Thanh toán hóa đơn với MoMo",
   partnerCode: "MOMO",
-  redirectUrl: "http://localhost:3000/home",
-  ipnUrl:
-    "https://1d4a-2402-800-620e-d955-54e8-31f3-7cac-cb50.ngrok-free.app/api/payments/callback",
+  redirectUrl: "https://shop-bstore.vercel.app/home",
+  ipnUrl: "https://api-bstore-no35.vercel.app/api/payments/callback",
   requestType: "captureWallet",
   extraData: "",
   orderGroupId: "",
@@ -171,22 +170,25 @@ exports.callBack = async (req, res) => {
       updateStatusBill.orderSuccess = true;
       updateStatusBill.pay = req.body;
 
-      await axios.post(`http://localhost:8080/api/emails/emailOrder`, {
-        email: updateStatusBill.user.email,
-        username: updateStatusBill.name || updateStatusBill.user.username,
-        price: updateStatusBill.totalPrice,
-        products: updateStatusBill.cartItems,
-        orderId: orderId,
-        selected: updateStatusBill.formOfPayment,
-        delivery: updateStatusBill.deliveryMethod,
-        phone: updateStatusBill.phone,
-        ward: updateStatusBill.ward,
-        district: updateStatusBill.district,
-        province: updateStatusBill.province,
-        note: updateStatusBill.note,
-        store: updateStatusBill.store,
-        statusPayment: "Đã thanh toán",
-      });
+      await axios.post(
+        `https://api-bstore-no35.vercel.app/api/emails/emailOrder`,
+        {
+          email: updateStatusBill.user.email,
+          username: updateStatusBill.name || updateStatusBill.user.username,
+          price: updateStatusBill.totalPrice,
+          products: updateStatusBill.cartItems,
+          orderId: orderId,
+          selected: updateStatusBill.formOfPayment,
+          delivery: updateStatusBill.deliveryMethod,
+          phone: updateStatusBill.phone,
+          ward: updateStatusBill.ward,
+          district: updateStatusBill.district,
+          province: updateStatusBill.province,
+          note: updateStatusBill.note,
+          store: updateStatusBill.store,
+          statusPayment: "Đã thanh toán",
+        }
+      );
       await updateStatusBill.save();
     } else {
       updateStatusBill.pay = [];

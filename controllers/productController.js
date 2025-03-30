@@ -1,5 +1,6 @@
 const Product = require("../models/Product");
-
+const fs = require("fs").promises;
+const path = require("path");
 const createProduct = async (req, res) => {
   try {
     const { body, files } = req;
@@ -176,11 +177,27 @@ const updateProduct = async (req, res) => {
 
 const deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ message: "Sản phẩm không tồn tại" });
     }
-    res.status(200).json({ message: "Sản phẩm đã được xóa" });
+
+    // Xóa tất cả images của sản phẩm
+    for (const color of product.colors) {
+      for (const image of color.images) {
+        try {
+          const imagePath = path.join(__dirname, "../uploads", image);
+          await fs.unlink(imagePath);
+        } catch (err) {
+          console.error(`Không thể xóa file ${image}:`, err);
+        }
+      }
+    }
+
+    // Xóa sản phẩm từ database
+    await Product.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({ message: "Sản phẩm và hình ảnh đã được xóa" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

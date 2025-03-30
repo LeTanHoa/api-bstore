@@ -44,7 +44,6 @@ app.use(
   express.static(path.join(__dirname, "uploads"))
 );
 
-// Tạo server và cấu hình Socket.IO
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
