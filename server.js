@@ -44,17 +44,17 @@ app.use(
   express.static(path.join(__dirname, "uploads"))
 );
 
-const server = http.createServer(app);
-const io = socketIO(server, {
-  cors: {
-    origin: process.env.FRONTEND_URL,
-    methods: ["GET", "POST"],
-  },
-});
-console.log("Socket.IO initialized with CORS config:", {
-  origin: process.env.FRONTEND_URL,
-  methods: ["GET", "POST"],
-});
+// const server = http.createServer(app);
+// const io = socketIO(server, {
+//   cors: {
+//     origin: process.env.FRONTEND_URL,
+//     methods: ["GET", "POST"],
+//   },
+// });
+// console.log("Socket.IO initialized with CORS config:", {
+//   origin: process.env.FRONTEND_URL,
+//   methods: ["GET", "POST"],
+// });
 
 // Kết nối MongoDB
 mongoose
@@ -94,85 +94,85 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/emails", emailRoutes);
 
 // Socket.IO logic
-io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
+// io.on("connection", (socket) => {
+//   console.log("A user connected:", socket.id);
 
-  socket.on("joinChat", async ({ userId }) => {
-    console.log("joinChat event received with userId:", userId);
-    try {
-      if (!userId) return socket.emit("error", "User ID is required");
-      const user = await User.findById(userId);
-      if (!user) return socket.emit("error", "User not found");
+//   socket.on("joinChat", async ({ userId }) => {
+//     console.log("joinChat event received with userId:", userId);
+//     try {
+//       if (!userId) return socket.emit("error", "User ID is required");
+//       const user = await User.findById(userId);
+//       if (!user) return socket.emit("error", "User not found");
 
-      const room = user.role === "admin" ? "adminRoom" : userId;
-      socket.join(room);
-      console.log(`${user.username} (role: ${user.role}) joined room: ${room}`);
-    } catch (error) {
-      console.error("Error in joinChat:", error.message);
-      socket.emit("error", "Server error in joinChat");
-    }
-  });
+//       const room = user.role === "admin" ? "adminRoom" : userId;
+//       socket.join(room);
+//       console.log(`${user.username} (role: ${user.role}) joined room: ${room}`);
+//     } catch (error) {
+//       console.error("Error in joinChat:", error.message);
+//       socket.emit("error", "Server error in joinChat");
+//     }
+//   });
 
-  socket.on("sendMessage", async ({ senderId, receiverId, content }) => {
-    try {
-      const sender = await User.findById(senderId);
-      if (!sender) return socket.emit("error", "Sender not found");
+//   socket.on("sendMessage", async ({ senderId, receiverId, content }) => {
+//     try {
+//       const sender = await User.findById(senderId);
+//       if (!sender) return socket.emit("error", "Sender not found");
 
-      if (sender.role === "user") {
-        const admin = await User.findOne({ role: "admin" });
-        if (!admin) return socket.emit("error", "No admin available");
-        receiverId = admin._id;
-      } else if (sender.role === "admin") {
-        if (!receiverId) return socket.emit("error", "Receiver ID is required");
-        const receiver = await User.findById(receiverId);
-        if (!receiver) return socket.emit("error", "Receiver not found");
-      }
+//       if (sender.role === "user") {
+//         const admin = await User.findOne({ role: "admin" });
+//         if (!admin) return socket.emit("error", "No admin available");
+//         receiverId = admin._id;
+//       } else if (sender.role === "admin") {
+//         if (!receiverId) return socket.emit("error", "Receiver ID is required");
+//         const receiver = await User.findById(receiverId);
+//         if (!receiver) return socket.emit("error", "Receiver not found");
+//       }
 
-      // Đánh dấu tất cả tin nhắn từ receiverId đến senderId là đã đọc
-      await Message.updateMany(
-        { sender: receiverId, receiver: senderId, isRead: false },
-        { isRead: true }
-      );
-      console.log(`Marked messages from ${receiverId} to ${senderId} as read`);
+//       // Đánh dấu tất cả tin nhắn từ receiverId đến senderId là đã đọc
+//       await Message.updateMany(
+//         { sender: receiverId, receiver: senderId, isRead: false },
+//         { isRead: true }
+//       );
+//       console.log(`Marked messages from ${receiverId} to ${senderId} as read`);
 
-      // Tạo và lưu tin nhắn mới
-      const message = new Message({
-        sender: senderId,
-        receiver: receiverId,
-        content,
-      });
-      await message.save();
+//       // Tạo và lưu tin nhắn mới
+//       const message = new Message({
+//         sender: senderId,
+//         receiver: receiverId,
+//         content,
+//       });
+//       await message.save();
 
-      const populatedMessage = await Message.findById(message._id)
-        .populate("sender", "username")
-        .populate("receiver", "username");
-      console.log("Message saved and populated:", populatedMessage);
+//       const populatedMessage = await Message.findById(message._id)
+//         .populate("sender", "username")
+//         .populate("receiver", "username");
+//       console.log("Message saved and populated:", populatedMessage);
 
-      // Gửi tin nhắn mới tới receiver
-      io.to(receiverId).emit("receiveMessage", populatedMessage);
-      if (sender.role === "user") {
-        io.to("adminRoom").emit("receiveMessage", populatedMessage);
-      }
+//       // Gửi tin nhắn mới tới receiver
+//       io.to(receiverId).emit("receiveMessage", populatedMessage);
+//       if (sender.role === "user") {
+//         io.to("adminRoom").emit("receiveMessage", populatedMessage);
+//       }
 
-      // Gửi cập nhật danh sách tin nhắn đã đọc tới sender và receiver
-      const updatedMessages = await Message.find({
-        $or: [
-          { sender: senderId, receiver: receiverId },
-          { sender: receiverId, receiver: senderId },
-        ],
-      }).populate("sender receiver", "username");
-      io.to(senderId).emit("updateMessages", updatedMessages);
-      io.to(receiverId).emit("updateMessages", updatedMessages);
-    } catch (error) {
-      console.error("Error in sendMessage:", error.message);
-      socket.emit("error", error.message);
-    }
-  });
+//       // Gửi cập nhật danh sách tin nhắn đã đọc tới sender và receiver
+//       const updatedMessages = await Message.find({
+//         $or: [
+//           { sender: senderId, receiver: receiverId },
+//           { sender: receiverId, receiver: senderId },
+//         ],
+//       }).populate("sender receiver", "username");
+//       io.to(senderId).emit("updateMessages", updatedMessages);
+//       io.to(receiverId).emit("updateMessages", updatedMessages);
+//     } catch (error) {
+//       console.error("Error in sendMessage:", error.message);
+//       socket.emit("error", error.message);
+//     }
+//   });
 
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
-  });
-});
+//   socket.on("disconnect", () => {
+//     console.log("User disconnected:", socket.id);
+//   });
+// });
 
 app.get("/api/users", async (req, res) => {
   try {
@@ -217,5 +217,9 @@ app.get("/", (req, res) => {
 // Khởi chạy server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server chạy tại http://localhost:${PORT}`);
+});
+
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server chạy tại http://localhost:${PORT}`);
 });
