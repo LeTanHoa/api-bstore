@@ -28,7 +28,17 @@ app.use(
     },
   })
 );
-app.use("/uploads", express.static("uploads"));
+const path = require("path");
+
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL); // Cho phép frontend truy cập
+    res.setHeader("Access-Control-Allow-Methods", "GET"); // Chỉ cho phép GET cho hình ảnh
+    next();
+  },
+  express.static(path.join(__dirname, "uploads"))
+);
 
 // Tạo server và cấu hình Socket.IO
 const server = http.createServer(app);
