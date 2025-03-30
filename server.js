@@ -34,7 +34,11 @@ app.use(
   "/uploads",
   (req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL); // Cho phép frontend truy cập
-    res.setHeader("Access-Control-Allow-Methods", "GET"); // Chỉ cho phép GET cho hình ảnh
+    res.setHeader("Access-Control-Allow-Methods", "GET");
+    res.setHeader("Access-Control-Allow-Methods", "POST");
+    res.setHeader("Access-Control-Allow-Methods", "PUT");
+    res.setHeader("Access-Control-Allow-Methods", "DELETE");
+    res.setHeader("Access-Control-Allow-Methods", "OPTIONS");
     next();
   },
   express.static(path.join(__dirname, "uploads"))
