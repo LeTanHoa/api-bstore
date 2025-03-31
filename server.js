@@ -15,7 +15,11 @@ const User = require("./models/User");
 app.use(bodyParser.json());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
-const allowedOrigins = [process.env.FRONTEND_URL];
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:3000",
+].filter(Boolean); // Loại bỏ giá trị undefined
+
 app.use(
   cors({
     origin: function (origin, callback) {
