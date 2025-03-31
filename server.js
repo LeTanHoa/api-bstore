@@ -38,14 +38,20 @@ app.use(
   "/uploads",
   (req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL); // Cho phép frontend truy cập
-    res.setHeader("Access-Control-Allow-Methods", "GET");
-    res.setHeader("Access-Control-Allow-Methods", "POST");
-    res.setHeader("Access-Control-Allow-Methods", "PUT");
-    res.setHeader("Access-Control-Allow-Methods", "DELETE");
-    res.setHeader("Access-Control-Allow-Methods", "OPTIONS");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS"
+    ); // Các phương thức cho phép
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization"
+    ); // Các header cho phép
+    if (req.method === "OPTIONS") {
+      return res.status(200).end(); // Xử lý preflight request
+    }
     next();
   },
-  express.static(path.join(__dirname, "uploads"))
+  express.static(path.join(__dirname, "uploads")) // Phục vụ file tĩnh từ uploads
 );
 
 // const server = http.createServer(app);
