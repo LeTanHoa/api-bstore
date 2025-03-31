@@ -36,7 +36,7 @@ const config = {
   secretKey: "K951B6PE1waDMi640xX08PD3vg6EkVlz",
   orderInfo: "Thanh toán hóa đơn với MoMo",
   partnerCode: "MOMO",
-  redirectUrl: "https://shop-bstore.vercel.app/home",
+  redirectUrl: process.env.FRONTEND_URL + "/home",
   ipnUrl: "https://api-bstore-no35.vercel.app/api/payments/callback",
   requestType: "captureWallet",
   extraData: "",
