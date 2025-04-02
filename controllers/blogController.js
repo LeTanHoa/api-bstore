@@ -1,15 +1,20 @@
 const Blog = require("../models/Blog");
+const { uploadImage } = require("../utils/uploadImage");
 
 const blog = async (req, res) => {
   const { title, content, category } = req.body;
   try {
-    const imagePath = req.file ? req.file.filename : null;
-    console.log("Image Path:", imagePath);
+    let imageUrl = null;
+    if (req.file) {
+      const uploadResult = await uploadImage(req.file);
+      imageUrl = uploadResult.url;
+    }
+
     const newBlog = new Blog({
       title,
       content,
       category: category,
-      image: imagePath,
+      image: imageUrl,
     });
     await newBlog.save();
     res.json(newBlog);
@@ -29,8 +34,7 @@ const getAllBlog = async (req, res) => {
 const updateBlog = async (req, res) => {
   const { id } = req.params;
   const { title, content, category } = req.body;
-  const image = req.file ? req.file.filename : null;
-
+  
   try {
     const blog = await Blog.findById(id);
     if (!blog) return res.status(404).json({ error: "Blog not found" });
@@ -39,11 +43,15 @@ const updateBlog = async (req, res) => {
     blog.content = content || blog.content;
     blog.category = category || blog.category;
 
-    if (image) blog.image = image;
+    if (req.file) {
+      const uploadResult = await uploadImage(req.file);
+      blog.image = uploadResult.url;
+    }
 
     await blog.save();
-    res.json({ message: "Blog updated successfully" });
+    res.json({ message: "Blog updated successfully", blog });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Failed to update blog" });
   }
 };

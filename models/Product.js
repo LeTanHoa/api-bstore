@@ -4,7 +4,7 @@ const colorSchema = new mongoose.Schema({
   colorName: { type: String, required: true },
   colorCode: { type: String, required: true },
   images: { type: [String], default: [] },
-});
+}, { _id: true });
 
 const productSchema = new mongoose.Schema(
   {

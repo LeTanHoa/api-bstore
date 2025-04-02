@@ -1,15 +1,21 @@
+// middleware/upload.js
 const multer = require("multer");
-const path = require("path");
+const fs = require("fs");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../uploads"));
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
+const storage = multer.memoryStorage(); // Lưu file vào memory thay vì disk để chuyển thành base64
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new Error("File không phải là ảnh!"), false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
-
-const upload = multer({ storage });
 
 module.exports = upload;
